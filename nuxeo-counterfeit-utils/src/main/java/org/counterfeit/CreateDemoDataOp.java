@@ -23,11 +23,6 @@
 
 package org.counterfeit;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.core.Constants;
@@ -35,17 +30,22 @@ import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
-import org.nuxeo.ecm.automation.core.collectors.DocumentModelCollector;
-import org.nuxeo.ecm.automation.core.collectors.BlobCollector;
 import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
-import org.nuxeo.ecm.core.api.DocumentRef;
+import org.nuxeo.ecm.core.api.model.impl.ArrayProperty;
 import org.nuxeo.ecm.platform.dublincore.listener.DublinCoreListener;
 import org.nuxeo.ecm.platform.uidgen.UIDSequencer;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.transaction.TransactionHelper;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -75,16 +75,34 @@ public class CreateDemoDataOp {
 
     protected static final int MARQUES_MAX = MARQUES.length - 1;
 
-    protected static final String[] FROM_COUNTRIES = { "africa/Botswana",
-            "africa/Chad", "asia/China", "asia/China", "asia/China",
-            "europe/Albania", "asia/Cambodia" };
+    protected static final String[] FROM_COUNTRIES = { "BW",
+            "TD", "CN", "CN", "CN",
+            "AL", "KH" };
+
+    protected static final double[][] FROM_COUNTRIES_GEO = {
+            {24.684866,-22.328474},
+            {100.50176510,13.7563309},
+            {121.473701,31.230416},
+            {121.473701,31.230416},
+            {121.473701,31.230416},
+            {20.168330,41.153332},
+            {104.8921668,11.5448729}};
 
     protected static final int FROM_COUNTRIES_MAX = FROM_COUNTRIES.length - 1;
 
-    protected static final String[] TO_COUNTRIES = { "europe/Germany",
-            "europe/Spain", "europe/Switzerland", "europe/France",
-            "america/United_States_of_America", "asia/China" };
+    protected static final String[] TO_COUNTRIES = { "DE",
+            "SP", "CH", "FR",
+            "US", "CN" };
 
+    protected static final double[][] TO_COUNTRIES_GEO = {
+            {13.404953,52.520006},
+            {-3.7037901,40.4167754},
+            {6.142296,46.1983922},
+            {5.369779,43.296482},
+            {-118.2436849,34.0522342},
+            {116.407394,39.904211}};
+    
+    
     protected static final int TO_COUNTRIES_MAX = TO_COUNTRIES.length - 1;
 
     protected long todayAsMS;
@@ -173,9 +191,31 @@ public class CreateDemoDataOp {
                 RandomValues.randomInt(20, 300));
         doc.setPropertyValue("affaire:nom_agent",
                 "Agent " + RandomValues.randomInt(1, 20));
-        doc.setPropertyValue("affaire:pays_destination",
-                FROM_COUNTRIES[RandomValues.randomInt(0, FROM_COUNTRIES_MAX)]);
         doc.setPropertyValue("affaire:pays_provenance",
+                FROM_COUNTRIES[RandomValues.randomInt(0, FROM_COUNTRIES_MAX)]);
+        
+        // Set geo coordinates origin
+        {
+            ArrayProperty property = (ArrayProperty) doc.getProperty("affaire:geo_provenance");
+            int index = RandomValues.randomInt(0, FROM_COUNTRIES_MAX);
+            List<Double> list = new ArrayList<>();
+            list.add(FROM_COUNTRIES_GEO[index][0]);
+            list.add(FROM_COUNTRIES_GEO[index][1]);
+            property.setValue(list);
+        }
+
+        // Set geo coordinates destination
+        {
+            ArrayProperty property = (ArrayProperty) doc.getProperty("affaire:geo_destination");
+            int index = RandomValues.randomInt(0, TO_COUNTRIES_MAX);
+            List<Double> list = new ArrayList<>();
+            list.add(TO_COUNTRIES_GEO[index][0]);
+            list.add(TO_COUNTRIES_GEO[index][1]);
+            property.setValue(list);
+        }
+        
+        
+        doc.setPropertyValue("affaire:pays_destination",
                 TO_COUNTRIES[RandomValues.randomInt(0, TO_COUNTRIES_MAX)]);
         int contrevenantsCount = RandomValues.randomInt(1, 3);
         String[] contrevenants = new String[contrevenantsCount];
