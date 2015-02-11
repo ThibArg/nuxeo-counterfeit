@@ -70,39 +70,31 @@ public class CreateDemoDataOp {
     protected static final int AUTORITES_MAX = AUTORITES.length - 1;
 
     protected static final String[] MARQUES = { "Chaumet", "Guerlain",
-            "Dom Pérignon", "Fred", "Kenzo", "Givenchy", "Henessy",
+            "Guerlain", "Guerlain", "Dom Pérignon", "Fred", "Kenzo",
+            "Givenchy", "Henessy", "Louis Vuitton", "Louis Vuitton",
             "Louis Vuitton", "Louis Vuitton", "Louis Vuitton" };
 
     protected static final int MARQUES_MAX = MARQUES.length - 1;
 
-    protected static final String[] FROM_COUNTRIES = { "BW",
-            "TD", "CN", "CN", "CN",
-            "AL", "KH" };
+    protected static final String[] FROM_COUNTRIES = { "BW", "TD", "CN", "CN",
+            "CN", "AL", "KH" };
 
     protected static final double[][] FROM_COUNTRIES_GEO = {
-            {24.684866,-22.328474},
-            {100.50176510,13.7563309},
-            {121.473701,31.230416},
-            {121.473701,31.230416},
-            {121.473701,31.230416},
-            {20.168330,41.153332},
-            {104.8921668,11.5448729}};
+            { 24.684866, -22.328474 }, { 100.50176510, 13.7563309 },
+            { 121.473701, 31.230416 }, { 121.473701, 31.230416 },
+            { 121.473701, 31.230416 }, { 20.168330, 41.153332 },
+            { 104.8921668, 11.5448729 } };
 
     protected static final int FROM_COUNTRIES_MAX = FROM_COUNTRIES.length - 1;
 
-    protected static final String[] TO_COUNTRIES = { "DE",
-            "SP", "CH", "FR",
+    protected static final String[] TO_COUNTRIES = { "DE", "ES", "CH", "FR",
             "US", "CN" };
 
     protected static final double[][] TO_COUNTRIES_GEO = {
-            {13.404953,52.520006},
-            {-3.7037901,40.4167754},
-            {6.142296,46.1983922},
-            {5.369779,43.296482},
-            {-118.2436849,34.0522342},
-            {116.407394,39.904211}};
-    
-    
+            { 13.404953, 52.520006 }, { -3.7037901, 40.4167754 },
+            { 6.142296, 46.1983922 }, { 5.369779, 43.296482 },
+            { -118.2436849, 34.0522342 }, { 116.407394, 39.904211 } };
+
     protected static final int TO_COUNTRIES_MAX = TO_COUNTRIES.length - 1;
 
     protected long todayAsMS;
@@ -114,6 +106,10 @@ public class CreateDemoDataOp {
     protected DateFormat _yyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
 
     protected Calendar _today = Calendar.getInstance();
+
+    protected String[] contrevenants;
+
+    protected int contrevenants_max;
 
     @Context
     protected CoreSession session;
@@ -127,6 +123,8 @@ public class CreateDemoDataOp {
         log.warn("Creating " + howMany + " Affaires...");
 
         todayAsMS = Calendar.getInstance().getTimeInMillis();
+
+        setupContrevenants();
 
         // Find the "Affaires" folder
         setUpAffairesPath();
@@ -193,7 +191,7 @@ public class CreateDemoDataOp {
                 "Agent " + RandomValues.randomInt(1, 20));
         doc.setPropertyValue("affaire:pays_provenance",
                 FROM_COUNTRIES[RandomValues.randomInt(0, FROM_COUNTRIES_MAX)]);
-        
+
         // Set geo coordinates origin
         {
             ArrayProperty property = (ArrayProperty) doc.getProperty("affaire:geo_provenance");
@@ -213,17 +211,16 @@ public class CreateDemoDataOp {
             list.add(TO_COUNTRIES_GEO[index][1]);
             property.setValue(list);
         }
-        
-        
+
         doc.setPropertyValue("affaire:pays_destination",
                 TO_COUNTRIES[RandomValues.randomInt(0, TO_COUNTRIES_MAX)]);
         int contrevenantsCount = RandomValues.randomInt(1, 3);
-        String[] contrevenants = new String[contrevenantsCount];
-        for (int j = 1; j < (contrevenantsCount - 1); j++) {
-            contrevenants[j] = "Contrevenant - "
-                    + RandomValues.randomInt(1, 30);
+        String[] theseContrevenants = new String[contrevenantsCount];
+        for (int j = 0; j < contrevenantsCount; j++) {
+            theseContrevenants[j] = contrevenants[RandomValues.randomInt(0,
+                    contrevenants_max)];
         }
-        doc.setPropertyValue("affaire:contrevenants", contrevenants);
+        doc.setPropertyValue("affaire:contrevenants", theseContrevenants);
 
         doc = session.createDocument(doc);
         saveTheAffaire(doc);
@@ -298,6 +295,26 @@ public class CreateDemoDataOp {
         }
 
         parentPath = docs.get(0).getPathAsString();
+    }
+
+    protected void setupContrevenants() {
+        // Setup the "contrevenants". We want 50 of them, but a bit more of "1",
+        // "6", and 42"
+        contrevenants = new String[60];
+        contrevenants_max = contrevenants.length - 1;
+        for (int i = 0; i < 50; i++) {
+            contrevenants[i] = "Contrevenant - " + (i + 1);
+        }
+        for (int i = 50; i < 55; i++) {
+            contrevenants[i] = "Contrevenant - 42";
+        }
+        for (int i = 55; i < 58; i++) {
+            contrevenants[i] = "Contrevenant - 1";
+        }
+        for (int i = 58; i < 60; i++) {
+            contrevenants[i] = "Contrevenant - 6";
+        }
+
     }
 
     protected void saveTheAffaire(DocumentModel inDoc) {
