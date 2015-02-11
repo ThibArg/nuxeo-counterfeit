@@ -1,0 +1,10 @@
+## Edit this file to customize your configuration ##
+default.target=.
+
+# Set list of templates to include, comma separated values.
+nuxeo.template.includes=common
+
+org.nuxeo.ecm.instance.description= LVMH DEMO
+
+elasticsearch.httpEnabled=true
+
