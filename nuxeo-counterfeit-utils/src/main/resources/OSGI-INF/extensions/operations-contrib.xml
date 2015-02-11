@@ -3,6 +3,8 @@
   <extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
     point="operations" >
       <operation class="org.counterfeit.CreateDemoDataOp" />
+      <operation class="org.counterfeit.CheckAffaireRelationOp" />
+      <operation class="org.counterfeit.DeleteDataDemoOp" />
    </extension>
     
 </component>
