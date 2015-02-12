@@ -42,30 +42,30 @@
       <artifact:resolveFile key="org.nuxeo.ecm.distribution:nuxeo-distribution-cap::zip" />
     </copy>
 
-    <!-- Nuxeo bundles -->
+      <!-- Nuxeo bundles -->
     <copy todir="${outdir}/nxr/bundles" overwrite="true">
       <artifact:set>
-        <includes>
-          <artifact groupId="org.nuxeo*" scope="!test" type="!pom" />
-          <!-- Include your artifacts using their groupId for instance -->
-          <artifact groupId="com.nuxeo*" scope="!test" type="!pom" />
-        </includes>
-        <excludes>
-          <artifact groupId="org.nuxeo.lib*" />
-        </excludes>
+          <includes>
+              <artifact groupId="org.nuxeo*" scope="!test" type="!pom" />
+              <artifact groupId="org.nuxeo*" scope="!test" type="!pom" />
+              <artifact groupId="nuxeo-studio" scope="!test" type="!pom" />
+          </includes>
+          <excludes>
+              <artifact groupId="org.nuxeo.lib*" />
+          </excludes>
       </artifact:set>
     </copy>
     <!-- Third-party libraries -->
     <copy todir="${outdir}/nxr/lib" overwrite="true">
       <artifact:set>
-        <includes>
-          <artifact groupId="!org.nuxeo*" scope="!test" />
-          <artifact groupId="org.nuxeo.lib*" scope="!test" />
-        </includes>
-        <excludes>
-          <!-- Filter out your artifacts using their groupId for instance -->
-          <artifact groupId="com.nuxeo*" />
-        </excludes>
+          <includes>
+              <artifact groupId="!org.nuxeo*" scope="!test" />
+              <artifact groupId="org.nuxeo.lib*" scope="!test" />
+          </includes>
+          <excludes>
+              <artifact groupId="org.nuxeo*" />
+              <artifact groupId="nuxeo-studio" />
+          </excludes>
       </artifact:set>
     </copy>
     <nx:rmdups dir="${outdir}/nxr/lib" />

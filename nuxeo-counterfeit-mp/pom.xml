@@ -49,6 +49,12 @@
       <version>${nuxeo.counterfeit.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>nuxeo-studio</groupId>
+      <artifactId>lvmh-poc-nuxeo-presales</artifactId>
+      <version>0.0.0-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
 
   <build>
