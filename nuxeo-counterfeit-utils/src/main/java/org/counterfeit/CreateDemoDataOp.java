@@ -32,9 +32,11 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.ecm.core.api.DocumentException;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.model.impl.ArrayProperty;
+import org.nuxeo.ecm.core.lifecycle.LifeCycleException;
 import org.nuxeo.ecm.platform.dublincore.listener.DublinCoreListener;
 import org.nuxeo.ecm.platform.uidgen.UIDSequencer;
 import org.nuxeo.runtime.api.Framework;
@@ -45,7 +47,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -72,7 +73,8 @@ public class CreateDemoDataOp {
     protected static final String[] MARQUES = { "Chaumet", "Guerlain",
             "Guerlain", "Guerlain", "Dom Pérignon", "Fred", "Kenzo",
             "Givenchy", "Henessy", "Louis Vuitton", "Louis Vuitton",
-            "Louis Vuitton", "Louis Vuitton", "Louis Vuitton" };
+            "Louis Vuitton", "Louis Vuitton", "Louis Vuitton", "Tag Heuer",
+            "Tag Heuer", "Tag Heuer", "Tag Heuer" };
 
     protected static final int MARQUES_MAX = MARQUES.length - 1;
 
@@ -118,7 +120,7 @@ public class CreateDemoDataOp {
     protected long howMany;
 
     @OperationMethod
-    public void run() {
+    public void run() throws DocumentException, LifeCycleException {
 
         log.warn("Creating " + howMany + " Affaires...");
 
@@ -148,7 +150,8 @@ public class CreateDemoDataOp {
 
     }
 
-    protected void createOneAffaire() {
+    protected void createOneAffaire() throws DocumentException,
+            LifeCycleException {
 
         DocumentModel doc;
 
@@ -162,7 +165,7 @@ public class CreateDemoDataOp {
 
         // Setup values
         doc.setPropertyValue("dc:title", title);
-        doc.setPropertyValue("affaire:type_affaire", "Douane");
+        doc.setPropertyValue("affaire:origine_affaire", "Douane");
 
         // =========================================== dublincore
         // Always created by "douanier"
@@ -232,38 +235,10 @@ public class CreateDemoDataOp {
     /*
      * For anything > 2 months, we consider it's closed
      */
-    protected void changeLifecycleState(DocumentModel inDoc, Calendar inCreation) {
+    protected void changeLifecycleState(DocumentModel inDoc, Calendar inCreation)
+            throws DocumentException, LifeCycleException {
 
-        long diffInDays = TimeUnit.DAYS.convert(
-                todayAsMS - inCreation.getTimeInMillis(), TimeUnit.MILLISECONDS);
-
-        if (diffInDays > 60) {
-            inDoc.followTransition("to_qualification");
-            inDoc.followTransition("to_verification");
-            inDoc.followTransition("to_intervention");
-            inDoc.followTransition("to_close");
-        } else {
-
-            int r = RandomValues.randomInt(1, 100);
-
-            // 5% "nouvelle"
-            if (r > 5) {
-                // 15% "qualification"
-                inDoc.followTransition("to_qualification");
-                if (r >= 20) {
-                    // 30% "Verification,"
-                    inDoc.followTransition("to_verification");
-                    if (r >= 50) {
-                        // 10% "intervention"
-                        inDoc.followTransition("to_intervention");
-                        if (r >= 60) {
-                            // 40% "close"
-                            inDoc.followTransition("to_close");
-                        }
-                    }
-                }
-            }
-        }
+        Tools.changeLifecycleState(session, inDoc, inCreation);
 
         switch (inDoc.getCurrentLifeCycleState()) {
         case "qualification":
