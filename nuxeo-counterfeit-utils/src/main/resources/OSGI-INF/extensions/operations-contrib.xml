@@ -5,6 +5,7 @@
       <operation class="org.counterfeit.CreateDemoDataOp" />
       <operation class="org.counterfeit.CheckAffaireRelationOp" />
       <operation class="org.counterfeit.DeleteDataDemoOp" />
+      <operation class="org.counterfeit.AWSUpdateDataDemoOP" />
    </extension>
     
 </component>
