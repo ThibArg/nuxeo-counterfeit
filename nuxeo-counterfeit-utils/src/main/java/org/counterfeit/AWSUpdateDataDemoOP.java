@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  * WARNING: QUick dev, put in this plug-in for convenience because we already
  * have the utilities
  * 
- * But for sure, this operaiton should be remove from the final plug-in :-)
+ * But for sure, this operation should be remove from the final plug-in :-)
  * 
  */
 @Operation(id = AWSUpdateDataDemoOP.ID, category = Constants.CAT_SERVICES, label = "AWSUpdateDataDemoOP", description = "")
