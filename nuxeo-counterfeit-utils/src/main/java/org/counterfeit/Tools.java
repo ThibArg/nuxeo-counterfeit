@@ -63,42 +63,71 @@ public class Tools {
      * For anything > 2 months, we consider it's closed
      */
     public static void changeLifecycleState(CoreSession inSession,
-            DocumentModel inDoc, Calendar inCreation) throws DocumentException, LifeCycleException {
+            DocumentModel inDoc, Calendar inCreation, boolean isDouane,
+            boolean isPrestExt) throws DocumentException, LifeCycleException {
 
         long todayAsMS = Calendar.getInstance().getTimeInMillis();
         long diffInDays = TimeUnit.DAYS.convert(
                 todayAsMS - inCreation.getTimeInMillis(), TimeUnit.MILLISECONDS);
-        
+
         String theState = null;
         if (diffInDays > 60) {
-            theState = "close";
+            if (isDouane) {
+                theState = "close";
+            } else if(isPrestExt) {
+                theState = "Clos";
+            }
         } else {
             int r = RandomValues.randomInt(1, 100);
-            
-         // 5% "nouvelle"
-            if (r > 5) {
-                // 15% "qualification"
-                theState = "qualification";
-                if (r >= 20) {
-                    // 30% "Verification,"
-                    theState = "verification";
-                    if (r >= 50) {
-                        // 10% "intervention"
-                        theState = "intervention";
-                        if (r >= 60) {
-                            // 40% "close"
-                            theState = "close";
+            if (isDouane) {
+                // 5% "nouvelle"
+                if (r > 5) {
+                    // 15% "qualification"
+                    theState = "qualification";
+                    if (r >= 20) {
+                        // 30% "Verification,"
+                        theState = "verification";
+                        if (r >= 50) {
+                            // 10% "intervention"
+                            theState = "intervention";
+                            if (r >= 60) {
+                                // 40% "close"
+                                theState = "close";
+                            }
                         }
                     }
+                } else {
+                    theState = "nouvelle";
                 }
-            } else {
-                theState = "nouvelle";
+            } else if (isPrestExt) {
+             // 5% "NouveauCas"
+                if (r > 5) {
+                    // 15% "Ouvert"
+                    theState = "Ouvert";
+                    if (r >= 20) {
+                        // 30% "EnCoursTraitement,"
+                        theState = "EnCoursTraitement";
+                        if (r >= 50) {
+                            // 10% "TraitementExterne"
+                            theState = "TraitementExterne";
+                            if (r >= 60) {
+                                // 20% "Intervention"
+                                theState = "Intervention";
+                                if(r >= 80) {
+                                // 20% "Clos"
+                                    theState = "Clos";
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    theState = "NouveauCas";
+                }
             }
         }
 
         customSetCurrentLifecycleState(inSession, inDoc, theState);
-        
-        
+
     }
 
 }

@@ -31,7 +31,7 @@ import org.nuxeo.runtime.transaction.TransactionHelper;
 /**
  * 
  */
-@Operation(id=DeleteDataDemoOp.ID, category=Constants.CAT_SERVICES, label="DeleteDataDemoOp", description="")
+@Operation(id = DeleteDataDemoOp.ID, category = Constants.CAT_SERVICES, label = "DeleteDataDemoOp", description = "")
 public class DeleteDataDemoOp {
 
     public static final String ID = "DeleteDataDemoOp";
@@ -43,36 +43,38 @@ public class DeleteDataDemoOp {
 
     @OperationMethod
     public void run() {
-       
+
         log.warn("Deleting the data demo...");
-        
+
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
-        
+
         DocumentModelList docs;
         int size = 0;
         do {
-            docs = session.query("SELECT * FROM Affaire", 250);
+            docs = session.query(
+                    "SELECT * FROM Document WHERE ecm:primaryType in ('Affaire', 'AffairePrestExt')",
+                    250);
             size = docs.size();
-            if(size > 0) {
+            if (size > 0) {
 
-                log.warn("Deleting " + size + " 'Affaire'...");
-                
+                log.warn("Deleting " + size + " Affaire/AffairePrestExt...");
+
                 DocumentRef[] docRefs = new DocumentRef[size];
-                for(int i = 0; i < size; i++) {
+                for (int i = 0; i < size; i++) {
                     docRefs[i] = docs.get(i).getRef();
                 }
                 session.removeDocuments(docRefs);
                 TransactionHelper.commitOrRollbackTransaction();
                 TransactionHelper.startTransaction();
             }
-            
-        } while(size > 0);
+
+        } while (size > 0);
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
-        
+
         log.warn("Deleting the data demo -> done");
-        
-    }    
+
+    }
 
 }

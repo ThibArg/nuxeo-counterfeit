@@ -91,7 +91,8 @@ public class UpdateDataDemoOp {
 
             session.saveDocument(doc);
             
-            Tools.changeLifecycleState(session, doc, created);
+            String docType = doc.getType();
+            Tools.changeLifecycleState(session, doc, created, docType.equals("Affaire"), docType.equals("AffairePrestExt"));
 
             count += 1;
             if ((count % 50) == 0) {

@@ -7,6 +7,7 @@
       <operation class="org.counterfeit.DeleteDataDemoOp" />
       <operation class="org.counterfeit.AWSUpdateDataDemoOP" />
       <operation class="org.counterfeit.UpdateDataDemoOp" />
+      <operation class="org.counterfeit.MarquesInListToDenormMarquesOp" />
    </extension>
     
 </component>
