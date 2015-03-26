@@ -370,12 +370,12 @@ public class CreateDemoDataOp {
 
     protected void setUpAffairesPath() {
 
-        String nxql = "SELECT * FROM Affaires";
+        String nxql = "SELECT * FROM Affaires WHERE dc:title = 'Affaires'";
         DocumentModelList docs = session.query(nxql);
         if (docs.size() == 0) {
             throw new ClientException("We need an 'Affaires' document");
         } else if (docs.size() > 1) {
-            throw new ClientException("We need only one 'Affaires' document");
+            throw new ClientException("We need only one 'Affaires' document with 'Afaires' title");
         }
 
         parentPath = docs.get(0).getPathAsString();
@@ -390,13 +390,13 @@ public class CreateDemoDataOp {
             contrevenants[i] = "contrevenant" + (i + 1);
         }
         for (int i = 50; i < 55; i++) {
-            contrevenants[i] = "contrevenant - 42";
+            contrevenants[i] = "contrevenant-42";
         }
         for (int i = 55; i < 58; i++) {
-            contrevenants[i] = "contrevenant - 1";
+            contrevenants[i] = "contrevenant-1";
         }
         for (int i = 58; i < 60; i++) {
-            contrevenants[i] = "contrevenant - 6";
+            contrevenants[i] = "contrevenant-6";
         }
 
     }
