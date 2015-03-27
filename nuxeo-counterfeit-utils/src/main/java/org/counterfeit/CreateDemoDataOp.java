@@ -52,7 +52,16 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * Create n Affaire/AffairePrestExt (1/2 of each), with pseudo-random values.
+ * "pseudo" because we make sure some brands ("marques") and some
+ * "contrevenants" are more involved than others, so showing stats looks cool
+ * (not an eve repartition between each)
  * 
+ * Hopefully, reading the code will be clear enough (yes, this is what you say
+ * when you don't write a doc)
+ * 
+ * Something VERY IMPORTANT: The values must be the same as the one used in the
+ * Studio project.
  */
 @Operation(id = CreateDemoDataOp.ID, category = Constants.CAT_SERVICES, label = "CreateDemoDataOp", description = "")
 public class CreateDemoDataOp {
@@ -91,12 +100,16 @@ public class CreateDemoDataOp {
     protected static final int QUANTITIES_MAX = QUANTITIES.length - 1;
 
     // Cf "AffaireType" vocabulary
-    protected static final String[] TYPE_AFFAIRE = { "PC", "PC", "MJ", "MJ", "MJ", "MJ", "CDC" };
+    protected static final String[] TYPE_AFFAIRE = { "PC", "PC", "MJ", "MJ",
+            "MJ", "MJ", "CDC" };
 
     protected static final int TYPE_AFFAIRE_MAX = TYPE_AFFAIRE.length - 1;
-    
+
     // Cf "OperationType" vocabulary
-    protected static final String[] TYPE_OPERATION = {"Douane", "Douane", "Douane", "Douane", "Investigation", "Investigation", "Investigation", "Saisie Police", "Raid", "Investigation", "Training"};
+    protected static final String[] TYPE_OPERATION = { "Douane", "Douane",
+            "Douane", "Douane", "Investigation", "Investigation",
+            "Investigation", "Saisie Police", "Raid", "Investigation",
+            "Training" };
 
     protected static final int TYPE_OPERATION_MAX = TYPE_OPERATION.length - 1;
 
@@ -136,7 +149,7 @@ public class CreateDemoDataOp {
     protected String[] contrevenants;
 
     protected int contrevenants_max;
-    
+
     protected String theUser;
 
     @Context
@@ -148,7 +161,8 @@ public class CreateDemoDataOp {
     @OperationMethod
     public void run() throws DocumentException, LifeCycleException {
 
-        log.warn("Creating " + howMany + " documents Affaire/AffairePrestExt...");
+        log.warn("Creating " + howMany
+                + " documents Affaire/AffairePrestExt...");
 
         todayAsMS = Calendar.getInstance().getTimeInMillis();
 
@@ -174,7 +188,8 @@ public class CreateDemoDataOp {
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
 
-        log.warn("Creation of " + howMany + " documents Affaire/AffairePrestExt done.");
+        log.warn("Creation of " + howMany
+                + " documents Affaire/AffairePrestExt done.");
     }
 
     protected void createOneAffaire() throws DocumentException,
@@ -190,12 +205,13 @@ public class CreateDemoDataOp {
             origineAffaire = "Douane";
             theUser = "douanier";
             docType = "Affaire";
-        } else if(isAffairePrestExt){
+        } else if (isAffairePrestExt) {
             origineAffaire = "Prestataire Externe";
             theUser = "prestext1";
             docType = "AffairePrestExt";
         } else {
-            throw new ClientException("Not douanier, nor prest. ext => impossible");
+            throw new ClientException(
+                    "Not douanier, nor prest. ext => impossible");
         }
         typeAffaire = TYPE_AFFAIRE[RandomValues.randomInt(0, TYPE_AFFAIRE_MAX)];
 
@@ -205,7 +221,8 @@ public class CreateDemoDataOp {
         String yearStr = yyyy.format(created.getTime());
         UIDSequencer svc = Framework.getService(UIDSequencer.class);
         int next = svc.getNext(yearStr + "-AFFAIRE");
-        String title = typeAffaire + "." + yearStr + "." + String.format("%04d", next);
+        String title = typeAffaire + "." + yearStr + "."
+                + String.format("%04d", next);
 
         // Create the model
         doc = session.createDocumentModel(parentPath, title, docType);
@@ -223,8 +240,9 @@ public class CreateDemoDataOp {
 
         // =========================================== affaire
         doc.setPropertyValue("affaire:type_affaire", typeAffaire);
-        doc.setPropertyValue("affaire:type_operation", TYPE_OPERATION[RandomValues.randomInt(0, TYPE_OPERATION_MAX)]);
-        if(isAffairePrestExt) {
+        doc.setPropertyValue("affaire:type_operation",
+                TYPE_OPERATION[RandomValues.randomInt(0, TYPE_OPERATION_MAX)]);
+        if (isAffairePrestExt) {
             doc.setPropertyValue("affaireprestext:participant", theUser);
         }
         // We put just one Autorité
@@ -278,12 +296,14 @@ public class CreateDemoDataOp {
         doc.setPropertyValue("affaire:contrevenants", theseContrevenants);
 
         setupMarques(doc);
-        
-        if(isAffairePrestExt) {
-            doc.setPropertyValue("affaireprestext:estimation", RandomValues.randomInt(1000, 50000));
-            doc.setPropertyValue("affaireprestext:ref_investig", "Ref-" + RandomValues.randomInt(1, 30));
+
+        if (isAffairePrestExt) {
+            doc.setPropertyValue("affaireprestext:estimation",
+                    RandomValues.randomInt(1000, 50000));
+            doc.setPropertyValue("affaireprestext:ref_investig", "Ref-"
+                    + RandomValues.randomInt(1, 30));
         }
-        
+
         doc.putContextData("UpdatingData_NoEventPlease", true);
         doc = session.createDocument(doc);
         saveTheAffaire(doc);
@@ -314,10 +334,10 @@ public class CreateDemoDataOp {
                 addMarque(inDoc, aBrand);
             }
         }
-        
+
         count = used.size();
         String[] marques = new String[count];
-        for(int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i) {
             marques[i] = used.get(i);
         }
         inDoc.setPropertyValue("affaire:denorm_marques", marques);
@@ -329,7 +349,8 @@ public class CreateDemoDataOp {
         Property complexMeta = inDoc.getProperty("affaire:marques");
         HashMap<String, Serializable> oneEntry = new HashMap<String, Serializable>();
         String typeAffaire = (String) inDoc.getPropertyValue("affaire:type_affaire");
-        oneEntry.put("famille_produit", typeAffaire + "-" + RandomValues.randomInt(1, 10));
+        oneEntry.put("famille_produit",
+                typeAffaire + "-" + RandomValues.randomInt(1, 10));
         oneEntry.put("marque", inBrand);
         oneEntry.put("modele", "Modèle-" + +RandomValues.randomInt(10, 50));
         oneEntry.put("quantite",
@@ -341,12 +362,14 @@ public class CreateDemoDataOp {
     /*
      * For anything > 2 months, we consider it's closed
      */
-    protected void changeLifecycleState(DocumentModel inDoc, Calendar inCreation, boolean isDouane, boolean isPrestExt)
+    protected void changeLifecycleState(DocumentModel inDoc,
+            Calendar inCreation, boolean isDouane, boolean isPrestExt)
             throws DocumentException, LifeCycleException {
 
-        Tools.changeLifecycleState(session, inDoc, inCreation, isDouane, isPrestExt);
+        Tools.changeLifecycleState(session, inDoc, inCreation, isDouane,
+                isPrestExt);
 
-        if(isDouane) {
+        if (isDouane) {
             switch (inDoc.getCurrentLifeCycleState()) {
             case "qualification":
             case "verification":
@@ -357,13 +380,13 @@ public class CreateDemoDataOp {
                         ANTI_CONTREFACON_USERS[RandomValues.randomInt(0,
                                 ANTI_CONTREFACON_USERS_MAX)]);
                 break;
-    
+
             default:
                 inDoc.setPropertyValue("dc:lastContributor", theUser);
                 break;
             }
         }
-        
+
         saveTheAffaire(inDoc);
 
     }
@@ -375,7 +398,8 @@ public class CreateDemoDataOp {
         if (docs.size() == 0) {
             throw new ClientException("We need an 'Affaires' document");
         } else if (docs.size() > 1) {
-            throw new ClientException("We need only one 'Affaires' document with 'Afaires' title");
+            throw new ClientException(
+                    "We need only one 'Affaires' document with 'Afaires' title");
         }
 
         parentPath = docs.get(0).getPathAsString();
@@ -390,13 +414,13 @@ public class CreateDemoDataOp {
             contrevenants[i] = "contrevenant" + (i + 1);
         }
         for (int i = 50; i < 55; i++) {
-            contrevenants[i] = "contrevenant-42";
+            contrevenants[i] = "contrevenant42";
         }
         for (int i = 55; i < 58; i++) {
-            contrevenants[i] = "contrevenant-1";
+            contrevenants[i] = "contrevenant1";
         }
         for (int i = 58; i < 60; i++) {
-            contrevenants[i] = "contrevenant-6";
+            contrevenants[i] = "contrevenant6";
         }
 
     }

@@ -36,12 +36,22 @@ import org.nuxeo.ecm.core.api.DocumentModelList;
 /**
  * Renseigne les deux variables de contexte hasAutresAffaires (boolean) et
  * autresAffaires (DocumentModelList)
+ * 
+ * ATTENTION: Très simple, à prendre comme un exemple. Les règles finales seront
+ * certainement bien plus complexes.
+ * 
+ * => Cf (dans le projet Studio) la chaîne
+ * "Affaire_AffairePrestExt_OnAboutToCreate", appelée par le listener
+ * "about to create" pour les documents de type "Affaire" ou "AffairePrestExt".
+ * Cette chaîne lance l'opération, puis récupère la valeur de hasAutresAffaires
+ * et si hasAutresAffaires est true, un mail est envoyé, le mail template
+ * (DetectionNouvelleAffaireAvecRelations) boucle sur autresAffaires.
  */
 @Operation(id = CheckAffaireRelationOp.ID, category = Constants.CAT_DOCUMENT, label = "Affaire : Vérifier relations", description = "")
 public class CheckAffaireRelationOp {
 
     public static final String ID = "CheckAffaireRelationOp";
-    
+
     private static final Log log = LogFactory.getLog(CheckAffaireRelationOp.class);
 
     @Context
@@ -52,7 +62,7 @@ public class CheckAffaireRelationOp {
 
     @OperationMethod(collector = DocumentModelCollector.class)
     public DocumentModel run(DocumentModel inDoc) {
-        
+
         String type = inDoc.getType();
         if (!type.equals("Affaire") && !type.equals("AffairePrestExt")) {
             ctx.put("hasAutresAffaires", false);
@@ -65,68 +75,73 @@ public class CheckAffaireRelationOp {
         // We get an array of Complex values, which means an array of
         // Map<String, Serializable> where the String is the name of the field
         ArrayList<Map<String, Serializable>> values = (ArrayList<Map<String, Serializable>>) inDoc.getPropertyValue("affaire:marques");
-        if(values != null && values.size() > 0) {
+        if (values != null && values.size() > 0) {
             marques = "(";
             int max = values.size();
-            for(int i = 0; i < max; ++i) {
+            for (int i = 0; i < max; ++i) {
                 Map<String, Serializable> oneEntry = values.get(i);
                 marques += "'" + oneEntry.get("marque") + "'";
-                if(i < (max -1)) {
+                if (i < (max - 1)) {
                     marques += ",";
                 }
             }
             marques += ")";
         }
-        
+
         String contrevenantsStr = null;
         String[] contrevenants = (String[]) inDoc.getPropertyValue("affaire:contrevenants");
-        if(contrevenants != null && contrevenants.length > 0) {
+        if (contrevenants != null && contrevenants.length > 0) {
             contrevenantsStr = "(";
             int max = contrevenants.length;
-            for(int i = 0; i < max; ++i) {
+            for (int i = 0; i < max; ++i) {
                 contrevenantsStr += "'" + contrevenants[i] + "'";
-                if(i < (max -1)) {
+                if (i < (max - 1)) {
                     contrevenantsStr += ",";
                 }
             }
             contrevenantsStr += ")";
         }
-        
-        if(false) {
+
+        // THE FIRST DEMO USED THIS QUERY. We keep it just in case we have to move back there
+        if (false) {
             String nxql = "SELECT * FROM Affaire WHERE";
-            nxql += " affaire:marque = '" + inDoc.getPropertyValue("affaire:marque") + "'";
-            nxql += " AND affaire:pays_provenance = '" + inDoc.getPropertyValue("affaire:pays_provenance") + "'";
-            nxql += " AND affaire:pays_destination = '" + inDoc.getPropertyValue("affaire:pays_destination") + "'";
+            nxql += " affaire:marque = '"
+                    + inDoc.getPropertyValue("affaire:marque") + "'";
+            nxql += " AND affaire:pays_provenance = '"
+                    + inDoc.getPropertyValue("affaire:pays_provenance") + "'";
+            nxql += " AND affaire:pays_destination = '"
+                    + inDoc.getPropertyValue("affaire:pays_destination") + "'";
         }
 
-        if(marques != null || contrevenantsStr != null) {
-            // Not perfect algorithm, because we actually don't link the brand and the quantity
+        if (marques != null || contrevenantsStr != null) {
+            // Not perfect algorithm, because we actually don't link the brand
+            // and the quantity
             // OK for POC
             String nxql = "SELECT * FROM Document WHERE";
-            if(marques != null) {
+            if (marques != null) {
                 nxql += " affaire:marques/*/marque IN " + marques;
             }
-            if(contrevenantsStr != null) {
+            if (contrevenantsStr != null) {
                 nxql += " AND affaire:contrevenants IN " + contrevenantsStr;
             }
-    
+
             DocumentModelList docs = session.query(nxql);
-            
+
             // Remove our own ID
             String inDocId = inDoc.getId();
             int idx = -1;
             boolean found = false;
-            for(DocumentModel oneDoc : docs) {
+            for (DocumentModel oneDoc : docs) {
                 idx += 1;
-                if(oneDoc.getId().equals(inDocId)) {
+                if (oneDoc.getId().equals(inDocId)) {
                     found = true;
                     break;
                 }
             }
-            if(found) {
+            if (found) {
                 docs.remove(idx);
             }
-    
+
             ctx.put("hasAutresAffaires", docs.size() > 0);
             ctx.put("autresAffaires", docs);
         } else {

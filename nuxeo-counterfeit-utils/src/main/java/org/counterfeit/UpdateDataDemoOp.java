@@ -38,10 +38,11 @@ import org.nuxeo.ecm.platform.dublincore.listener.DublinCoreListener;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
- * We just update the dates
+ * We just update the dates. Usefull to launch before a new demo, so no neeed to
+ * delete the previous data and create a new one.
  * 
  */
-@Operation(id=UpdateDataDemoOp.ID, category=Constants.CAT_SERVICES, label="UpdateDataDemoOp", description="")
+@Operation(id = UpdateDataDemoOp.ID, category = Constants.CAT_SERVICES, label = "UpdateDataDemoOp", description = "")
 public class UpdateDataDemoOp {
 
     public static final String ID = "UpdateDataDemoOp";
@@ -83,16 +84,18 @@ public class UpdateDataDemoOp {
             doc.setPropertyValue("affaire:date_saisie", created);
             doc.setPropertyValue("affaire:echeance_de_reponse",
                     RandomValues.addDays(created, 10));
-            
+
             // Disable dublincore
             doc.putContextData(DublinCoreListener.DISABLE_DUBLINCORE_LISTENER,
                     true);
             doc.putContextData(ALLOW_VERSION_WRITE, Boolean.TRUE);
 
             session.saveDocument(doc);
-            
+
             String docType = doc.getType();
-            Tools.changeLifecycleState(session, doc, created, docType.equals("Affaire"), docType.equals("AffairePrestExt"));
+            Tools.changeLifecycleState(session, doc, created,
+                    docType.equals("Affaire"),
+                    docType.equals("AffairePrestExt"));
 
             count += 1;
             if ((count % 50) == 0) {
@@ -109,7 +112,7 @@ public class UpdateDataDemoOp {
         TransactionHelper.startTransaction();
 
         log.warn("...updating done.");
-       
-    } 
+
+    }
 
 }

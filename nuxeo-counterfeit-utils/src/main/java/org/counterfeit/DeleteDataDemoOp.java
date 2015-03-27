@@ -29,7 +29,7 @@ import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
- * 
+ * WARNING: This deletes all and every Affaire and AffairePrestExt documents
  */
 @Operation(id = DeleteDataDemoOp.ID, category = Constants.CAT_SERVICES, label = "DeleteDataDemoOp", description = "")
 public class DeleteDataDemoOp {

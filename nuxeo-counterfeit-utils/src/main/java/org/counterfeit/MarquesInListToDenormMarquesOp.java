@@ -33,7 +33,18 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 
 /**
- * 
+ * This one is a workaround to a problem with Studio (and/or nuxeo). The list of
+ * "marques" (brands) is stored in a complex-multivalued field, affaire:marques.
+ * Unfortunately, in Studio, you can't use an elasticsearch "terms" widget using
+ * affaire:marques/ * /marque for example." (notice: using "/ * /" because we're
+ * inside a java comment, but there are no spaces of course). The workaround was
+ * the following:
+ * <ul>
+ * <li>Add a affaire:dernorm_marques text field, multivalued</li>
+ * <li>For "about to create" and "before modification", transfert all the
+ * affaire:marques/n/marque to this field</li>
+ * </ul>
+ * It was easier to have an operation that doing it in Studio.
  */
 @Operation(id = MarquesInListToDenormMarquesOp.ID, category = Constants.CAT_DOCUMENT, label = "MarquesInListToDenormMarquesOp", description = "Fills the affaire:denorm_marques String list field (used for es aggregation). Document is not saved.")
 public class MarquesInListToDenormMarquesOp {
@@ -44,17 +55,17 @@ public class MarquesInListToDenormMarquesOp {
     public DocumentModel run(DocumentModel inDoc) {
 
         ArrayList<Map<String, Serializable>> values = (ArrayList<Map<String, Serializable>>) inDoc.getPropertyValue("affaire:marques");
-        
-        if(values != null && values.size() > 0) {
+
+        if (values != null && values.size() > 0) {
             int max = values.size();
             String[] brands = new String[max];
-            for(int i = 0; i < max; ++i) {
+            for (int i = 0; i < max; ++i) {
                 Map<String, Serializable> oneEntry = values.get(i);
                 brands[i] = (String) oneEntry.get("marque");
             }
             inDoc.setPropertyValue("affaire:denorm_marques", brands);
         }
-        
+
         return inDoc;
     }
 
